@@ -1,0 +1,109 @@
+@page "/tab-control-page"
+@using static TripleG3.Blazor.Components.PowerBuilder.TabControl
+
+<h1>TabControl Demo</h1>
+
+<h2>Basic TabControl (Top)</h2>
+<TabControl TabPages="@basicTabPages" @bind-SelectedIndex="@selectedIndex" />
+
+<p>Selected Index: @selectedIndex</p>
+
+<h2>TabControl with Icons</h2>
+<TabControl TabPages="@iconTabPages" Position="TabPositionValue.Top" />
+
+<h2>TabControl with Bottom Position</h2>
+<TabControl TabPages="@basicTabPages" Position="TabPositionValue.Bottom" />
+
+<h2>TabControl with Left Position</h2>
+<TabControl TabPages="@basicTabPages" Position="TabPositionValue.Left" Height="300px" />
+
+<h2>TabControl with Right Position</h2>
+<TabControl TabPages="@basicTabPages" Position="TabPositionValue.Right" Height="300px" />
+
+<h2>TabControl with Disabled Tab</h2>
+<TabControl TabPages="@disabledTabPages" />
+
+@code {
+	private int selectedIndex = 0;
+
+	private readonly List<TabPage> basicTabPages = new()
+	{
+		new TabPage 
+		{ 
+			Text = "Home", 
+			Title = "Home Page",
+			ChildContent = @<div>
+				<h3>Welcome to Home</h3>
+				<p>This is the home tab content.</p>
+			</div>
+		},
+		new TabPage 
+		{ 
+			Text = "Profile", 
+			Title = "User Profile",
+			ChildContent = @<div>
+				<h3>User Profile</h3>
+				<p>View and edit your profile information here.</p>
+			</div>
+		},
+		new TabPage 
+		{ 
+			Text = "Settings", 
+			Title = "Application Settings",
+			ChildContent = @<div>
+				<h3>Settings</h3>
+				<p>Configure your application preferences.</p>
+			</div>
+		}
+	};
+
+	private readonly List<TabPage> iconTabPages = new()
+	{
+		new TabPage 
+		{ 
+			Text = "Triple G3", 
+			PictureName = "images/G3Logo.png",
+			ChildContent = @<div>
+				<h3>Triple G3</h3>
+				<p>This tab has an icon!</p>
+			</div>
+		},
+		new TabPage 
+		{ 
+			Text = "Dashboard", 
+			ChildContent = @<div>
+				<h3>Dashboard</h3>
+				<p>View your dashboard analytics.</p>
+			</div>
+		}
+	};
+
+	private readonly List<TabPage> disabledTabPages = new()
+	{
+		new TabPage 
+		{ 
+			Text = "Available", 
+			ChildContent = @<div>
+				<h3>Available Tab</h3>
+				<p>This tab is available for selection.</p>
+			</div>
+		},
+		new TabPage 
+		{ 
+			Text = "Disabled", 
+			Disabled = true,
+			ChildContent = @<div>
+				<h3>Disabled Tab</h3>
+				<p>This content should not be accessible.</p>
+			</div>
+		},
+		new TabPage 
+		{ 
+			Text = "Also Available", 
+			ChildContent = @<div>
+				<h3>Also Available Tab</h3>
+				<p>This tab is also available.</p>
+			</div>
+		}
+	};
+}
