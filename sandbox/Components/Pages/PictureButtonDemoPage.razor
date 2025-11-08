@@ -1,0 +1,43 @@
+@page "/"
+@page "/picture-button-page"
+@inject NavigationManager Navigation
+
+<h1>PictureButton Demo</h1>
+
+<PictureButton Image=@G3LogoPath Text=@GoToText OnClick=@OnClicked />
+<p>Basic:</p>
+
+<PictureButton Image=@G3LogoPath Text=@GoToText />
+<p>Hover / Press states:</p>
+
+<PictureButton Image=@G3LogoPath Text=@AltText CheckedImage=@G3LogoAltPath IsToggle="true" Checked="@toggle" CheckedChanged="OnToggleChanged" />
+<p>Toggle:</p>
+
+<PictureButton Image=@G3LogoPath Text=@GoToText OnClick=@OnClicked Disabled="true" DisabledImage=@G3LogoDisabledPath />
+<p>Disabled:</p>
+
+<PictureButton Image=@G3LogoPath Text=@GoToText OnClick=@OnClicked Placement=@PictureButton.PicturePlacement.Bottom />
+<p>Different placement:</p>
+
+<PictureButton Text=@GoToText OnClick=@OnClicked ShowImage="false" />
+<p>Text:</p>
+
+@code {
+	private const string G3LogoPath = "images/G3Logo.png";
+	private const string G3LogoAltPath = "images/G3LogoWhite.png";
+	private const string G3LogoDisabledPath = "images/G3LogoBlack.png";
+	private const string GoToText = "Go to Triple G3";
+	private const string AltText = "Just click me :)";
+	private bool toggle;
+
+	private Task OnToggleChanged(bool value)
+	{
+		toggle = value;
+		return Task.CompletedTask;
+	}
+
+	private void OnClicked()
+	{
+		Navigation.NavigateTo("https://tripleg3.com");
+	}
+}
