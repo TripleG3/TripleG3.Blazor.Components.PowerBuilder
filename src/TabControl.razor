@@ -4,20 +4,20 @@
 <div class="pb-tab-control @CssTabPosition @Class"
 	 style=@InlineSizeStyle
 	 @attributes=@AdditionalAttributes>
-	<div class="pb-tab-header">
+	<div class="pb-tab-header" role="tablist">
 		@for (int i = 0; i < TabPages.Count; i++)
 		{
 			var index = i;
 			var tabPage = TabPages[i];
 			var isSelected = index == SelectedIndex;
-			<button class="pb-tab-button @(isSelected ? "pb-tab-selected" : "") @(tabPage.Disabled ? "pb-tab-disabled" : "")"
+			<button id="@($"tab-{index}")"
+					class="pb-tab-button @(isSelected ? "pb-tab-selected" : "") @(tabPage.Disabled ? "pb-tab-disabled" : "")"
 					disabled=@tabPage.Disabled
 					title=@tabPage.Title
 					aria-label=@(tabPage.AriaLabel ?? tabPage.Text)
 					aria-selected=@(isSelected ? "true" : "false")
 					role="tab"
-					@onclick=@(() => SelectTab(index))
-					@onclick:preventDefault="true">
+					@onclick=@(() => SelectTab(index))>
 				@if (!string.IsNullOrWhiteSpace(tabPage.PictureName))
 				{
 					<img class="pb-tab-icon"
@@ -32,7 +32,7 @@
 			</button>
 		}
 	</div>
-	<div class="pb-tab-content" role="tabpanel">
+	<div class="pb-tab-content" role="tabpanel" aria-labelledby="@($"tab-{SelectedIndex}")">
 		@if (SelectedIndex >= 0 && SelectedIndex < TabPages.Count)
 		{
 			@TabPages[SelectedIndex].ChildContent
@@ -73,8 +73,8 @@
 		get
 		{
 			var parts = new List<string>(2);
-			if (!string.IsNullOrWhiteSpace(Width)) parts.Add($"width:{Width}");
-			if (!string.IsNullOrWhiteSpace(Height)) parts.Add($"height:{Height}");
+			if (!string.IsNullOrWhiteSpace(Width)) parts.Add($"width: {Width}");
+			if (!string.IsNullOrWhiteSpace(Height)) parts.Add($"height: {Height}");
 			return string.Join(";", parts);
 		}
 	}

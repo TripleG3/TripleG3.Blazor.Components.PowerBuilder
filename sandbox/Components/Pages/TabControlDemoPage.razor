@@ -26,7 +26,7 @@
 @code {
 	private int selectedIndex = 0;
 
-	private List<TabPage> basicTabPages = new()
+	private readonly List<TabPage> basicTabPages = new()
 	{
 		new TabPage 
 		{ 
@@ -57,7 +57,7 @@
 		}
 	};
 
-	private List<TabPage> iconTabPages = new()
+	private readonly List<TabPage> iconTabPages = new()
 	{
 		new TabPage 
 		{ 
@@ -78,7 +78,7 @@
 		}
 	};
 
-	private List<TabPage> disabledTabPages = new()
+	private readonly List<TabPage> disabledTabPages = new()
 	{
 		new TabPage 
 		{ 
