@@ -1,0 +1,171 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+
+<button class="pb-picture-button @CssOrientation @CssChecked @CssDisabled @Class"
+		disabled=@Disabled
+		title=@Title
+		aria-label=@AriaLabelOrText
+		aria-pressed=@(IsToggle? Checked : null)
+		style=@InlineSizeStyle
+		@attributes=@AdditionalAttributes
+		@onpointerdown=@HandlePointerDown
+		@onpointerup=@HandlePointerUp
+		@onpointerleave=@HandlePointerLeave
+		@onmouseenter=@HandleMouseEnter
+		@onmouseleave=@HandleMouseLeave
+		@onkeydown=@HandleKeyDown
+		@onkeyup=@HandleKeyUp
+		@onclick=@HandleClick>
+	@if (ShowImage && CurrentImageSrc is not null)
+	{
+		<img class="pb-picture"
+			 src=@CurrentImageSrc
+			 alt=@AriaLabelOrText
+			 draggable=@false />
+	}
+	@if (ShowText && !string.IsNullOrWhiteSpace(Text))
+	{
+		<span class="pb-text">@Text</span>
+	}
+</button>
+
+@code {
+	// Public API (modeled after PowerBuilder PictureButton, pragmatic subset)
+	[Parameter] public string? Image { get; set; }
+	[Parameter] public string? HoverImage { get; set; }
+	[Parameter] public string? PressedImage { get; set; }
+	[Parameter] public string? DisabledImage { get; set; }
+	[Parameter] public string? CheckedImage { get; set; }
+
+	[Parameter] public string? Text { get; set; }
+	[Parameter] public string? Title { get; set; }
+	[Parameter] public string? AriaLabel { get; set; }
+
+	[Parameter] public bool Disabled { get; set; }
+
+	// Toggle behavior
+	[Parameter] public bool IsToggle { get; set; }
+	[Parameter] public bool Checked { get; set; }
+	[Parameter] public EventCallback<bool> CheckedChanged { get; set; }
+
+	// Layout and visibility options
+	[Parameter] public PicturePlacement Placement { get; set; } = PicturePlacement.Left;
+	[Parameter] public bool ShowText { get; set; } = true;
+	[Parameter] public bool ShowImage { get; set; } = true;
+
+	// Sizing and styling
+	[Parameter] public string? Width { get; set; }
+	[Parameter] public string? Height { get; set; }
+	[Parameter] public string? Class { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
+
+	// Events
+	[Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+
+	// Internal state
+	private bool _isPressed;
+	private bool _isHovered;
+
+	private string? CurrentImageSrc
+		=> Disabled && !string.IsNullOrWhiteSpace(DisabledImage) ? DisabledImage
+		 : (IsToggle && Checked && (!string.IsNullOrWhiteSpace(CheckedImage) || !string.IsNullOrWhiteSpace(PressedImage))) ? (CheckedImage ?? PressedImage ?? Image)
+		 : (_isPressed && !string.IsNullOrWhiteSpace(PressedImage)) ? PressedImage
+		 : (_isHovered && !string.IsNullOrWhiteSpace(HoverImage)) ? HoverImage
+		 : Image;
+
+	private string CssOrientation => Placement switch
+	{
+		PicturePlacement.Left => "pb-horizontal",
+		PicturePlacement.Right => "pb-horizontal pb-reverse",
+		PicturePlacement.Top => "pb-vertical",
+		PicturePlacement.Bottom => "pb-vertical pb-reverse",
+		_ => "pb-horizontal"
+	};
+
+	private string CssChecked => IsToggle && Checked ? "pb-checked" : string.Empty;
+	private string CssDisabled => Disabled ? "pb-disabled" : string.Empty;
+
+	private string AriaLabelOrText => !string.IsNullOrWhiteSpace(AriaLabel)
+		? AriaLabel!
+		: (!string.IsNullOrWhiteSpace(Text) ? Text! : "button");
+
+	private string InlineSizeStyle
+	{
+		get
+		{
+			var parts = new List<string>(2);
+			if (!string.IsNullOrWhiteSpace(Width)) parts.Add($"width:{Width}");
+			if (!string.IsNullOrWhiteSpace(Height)) parts.Add($"height:{Height}");
+			return string.Join(";", parts);
+		}
+	}
+
+	private async Task HandleClick(MouseEventArgs e)
+	{
+		if (Disabled) return;
+
+		if (IsToggle)
+		{
+			Checked = !Checked;
+			if (CheckedChanged.HasDelegate)
+			{
+				await CheckedChanged.InvokeAsync(Checked);
+			}
+		}
+
+		await OnClick.InvokeAsync(e);
+	}
+
+	private void HandlePointerDown(PointerEventArgs _)
+	{
+		if (Disabled) return;
+		_isPressed = true;
+	}
+
+	private void HandlePointerUp(PointerEventArgs _)
+	{
+		_isPressed = false;
+	}
+
+	private void HandlePointerLeave(PointerEventArgs _)
+	{
+		_isPressed = false;
+	}
+
+	private void HandleMouseEnter(MouseEventArgs _)
+	{
+		if (Disabled) return;
+		_isHovered = true;
+	}
+
+	private void HandleMouseLeave(MouseEventArgs _)
+	{
+		_isHovered = false;
+		_isPressed = false;
+	}
+
+	private void HandleKeyDown(KeyboardEventArgs e)
+	{
+		if (Disabled) return;
+		if (e.Key is " " or "Enter")
+		{
+			_isPressed = true;
+		}
+	}
+
+	private void HandleKeyUp(KeyboardEventArgs e)
+	{
+		if (e.Key is " " or "Enter")
+		{
+			_isPressed = false;
+		}
+	}
+
+	public enum PicturePlacement
+	{
+		Left,
+		Right,
+		Top,
+		Bottom
+	}
+}
