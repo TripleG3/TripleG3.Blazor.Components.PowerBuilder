@@ -1,0 +1,120 @@
+@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
+
+<div class="pb-tab-control @CssTabPosition @Class"
+	 style=@InlineSizeStyle
+	 @attributes=@AdditionalAttributes>
+	<div class="pb-tab-header">
+		@for (int i = 0; i < TabPages.Count; i++)
+		{
+			var index = i;
+			var tabPage = TabPages[i];
+			var isSelected = index == SelectedIndex;
+			<button class="pb-tab-button @(isSelected ? "pb-tab-selected" : "") @(tabPage.Disabled ? "pb-tab-disabled" : "")"
+					disabled=@tabPage.Disabled
+					title=@tabPage.Title
+					aria-label=@(tabPage.AriaLabel ?? tabPage.Text)
+					aria-selected=@(isSelected ? "true" : "false")
+					role="tab"
+					@onclick=@(() => SelectTab(index))
+					@onclick:preventDefault="true">
+				@if (!string.IsNullOrWhiteSpace(tabPage.PictureName))
+				{
+					<img class="pb-tab-icon"
+						 src=@tabPage.PictureName
+						 alt=@(tabPage.AriaLabel ?? tabPage.Text)
+						 draggable=@false />
+				}
+				@if (!string.IsNullOrWhiteSpace(tabPage.Text))
+				{
+					<span class="pb-tab-text @(BoldSelectedText && isSelected ? "pb-bold" : "")">@tabPage.Text</span>
+				}
+			</button>
+		}
+	</div>
+	<div class="pb-tab-content" role="tabpanel">
+		@if (SelectedIndex >= 0 && SelectedIndex < TabPages.Count)
+		{
+			@TabPages[SelectedIndex].ChildContent
+		}
+	</div>
+</div>
+
+@code {
+	// Public API (modeled after PowerBuilder TabControl, pragmatic subset)
+	[Parameter] public List<TabPage> TabPages { get; set; } = new();
+	
+	[Parameter] public int SelectedIndex { get; set; }
+	[Parameter] public EventCallback<int> SelectedIndexChanged { get; set; }
+	
+	[Parameter] public TabPositionValue Position { get; set; } = TabPositionValue.Top;
+	[Parameter] public bool BoldSelectedText { get; set; } = true;
+	
+	// Sizing and styling
+	[Parameter] public string? Width { get; set; }
+	[Parameter] public string? Height { get; set; }
+	[Parameter] public string? Class { get; set; }
+	[Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? AdditionalAttributes { get; set; }
+	
+	// Events
+	[Parameter] public EventCallback<int> OnSelectionChanged { get; set; }
+
+	private string CssTabPosition => Position switch
+	{
+		TabPositionValue.Top => "pb-tabs-top",
+		TabPositionValue.Bottom => "pb-tabs-bottom",
+		TabPositionValue.Left => "pb-tabs-left",
+		TabPositionValue.Right => "pb-tabs-right",
+		_ => "pb-tabs-top"
+	};
+
+	private string InlineSizeStyle
+	{
+		get
+		{
+			var parts = new List<string>(2);
+			if (!string.IsNullOrWhiteSpace(Width)) parts.Add($"width:{Width}");
+			if (!string.IsNullOrWhiteSpace(Height)) parts.Add($"height:{Height}");
+			return string.Join(";", parts);
+		}
+	}
+
+	private async Task SelectTab(int index)
+	{
+		if (index < 0 || index >= TabPages.Count || TabPages[index].Disabled)
+			return;
+
+		if (SelectedIndex != index)
+		{
+			SelectedIndex = index;
+			
+			if (SelectedIndexChanged.HasDelegate)
+			{
+				await SelectedIndexChanged.InvokeAsync(SelectedIndex);
+			}
+			
+			if (OnSelectionChanged.HasDelegate)
+			{
+				await OnSelectionChanged.InvokeAsync(SelectedIndex);
+			}
+		}
+	}
+
+	public class TabPage
+	{
+		public string? Text { get; set; }
+		public string? PictureName { get; set; }
+		public string? Title { get; set; }
+		public string? AriaLabel { get; set; }
+		public bool Disabled { get; set; }
+		public RenderFragment? ChildContent { get; set; }
+	}
+
+	public enum TabPositionValue
+	{
+		Top,
+		Bottom,
+		Left,
+		Right
+	}
+}
